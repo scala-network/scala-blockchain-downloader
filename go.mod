@@ -3,6 +3,7 @@ module github.com/scala-network/scala-blockchain-downloader
 go 1.16
 
 require (
+	github.com/TwinProduction/go-color v1.0.0 // indirect
 	github.com/ipfs/go-ipfs v0.8.0
 	github.com/ipfs/go-ipfs-config v0.14.0
 	github.com/ipfs/go-ipfs-files v0.0.8
