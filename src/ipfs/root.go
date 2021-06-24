@@ -3,6 +3,7 @@ package ipfs
 import (
 	"context"
 	"fmt"
+	"time"
 	"io"
 	"io/ioutil"
 	//"log"
@@ -28,9 +29,9 @@ import (
 	"github.com/ipfs/go-ipfs/plugin/loader"
 	"github.com/ipfs/go-ipfs/repo/fsrepo"
 	"github.com/TwinProduction/go-color"
+	"github.com/cheggaaa/pb/v3"
 	//"github.com/libp2p/go-libp2p-core/peer"
 )
-
 
 type path struct {
 	path string
@@ -54,7 +55,6 @@ func setupPlugins(externalPluginsPath string) error {
 
 	return nil
 }
-
 
 
 func createTempRepo(ctx context.Context) (string, error) {
@@ -117,6 +117,42 @@ func spawnEphemeral(ctx context.Context) (icore.CoreAPI, error) {
 	return createNode(ctx, repoPath)
 }
 
+func printDownloadedSize(totalSize int) (err error){
+	bar := pb.New(totalSize)
+	bar.Set(pb.Bytes, true)
+	bar.Set(pb.SIBytesPrefix, true)
+	bar.Start()
+
+	var oldSize int = 0
+	var count int = 0
+
+	for {
+		fi, err := os.Stat("blockchain.raw")
+		if err != nil {
+			return err
+		}
+		size := fi.Size()
+
+		if count == 0 {
+			bar.Add((int(size)))
+			oldSize = int(size)
+			count++
+		}else{
+			bar.Add((int(size) - oldSize))
+			oldSize = int(size)
+			count++
+		}
+
+		time.Sleep(time.Millisecond)
+
+		if ((totalSize - int(size)) / 100000) <= 50  {
+			bar.Finish()
+			break
+		}
+	}
+	return nil
+}
+
 func DownloadChain(hash string, importToolPath string, dataDir string, downloadOnly bool, importVerify bool) {
 	
 	ctx, cancel := context.WithCancel(context.Background())
@@ -129,21 +165,35 @@ func DownloadChain(hash string, importToolPath string, dataDir string, downloadO
         panic(fmt.Errorf("failed to spawn ephemeral node: %s", err))
     }
 
-	fmt.Println(color.Ize(color.Green, "Started an ephemeral IPFS node ✔️"))
+	fmt.Println(color.Ize(color.Green, "Started an ephemeral IPFS node"))
 
 	outputBasePath := "./"
 	outputPathFile := outputBasePath + "blockchain.raw"
 
 	ipfsHash := icorepath.New(hash)
 
-	rootNodeFile, err := ipfs.Unixfs().Get(ctx, ipfsHash)
-	err = files.WriteTo(rootNodeFile, outputPathFile)
+	fmt.Println(color.Ize(color.Green, "Start downloading blockchain data"))
+	fmt.Printf("\n")
+	fileStat, err := ipfs.Object().Stat(ctx, ipfsHash)
 
+	if err != nil {
+		panic(fmt.Errorf("Could not object stat with error: %s", err))
+	}
+
+	go printDownloadedSize(fileStat.CumulativeSize)
+
+	rootNodeFile, err := ipfs.Unixfs().Get(ctx, ipfsHash)
+	if err != nil {
+		panic(fmt.Errorf("Could not get file with CID: %s", err))
+	}
+
+	err = files.WriteTo(rootNodeFile, outputPathFile)
 	if err != nil {
 		panic(fmt.Errorf("Could not write out the fetched CID: %s", err))
 	}
 
-	fmt.Println(color.Ize(color.Green, "Downloaded blockchain data ✔️"))
+	fmt.Println("\n")
+	fmt.Println(color.Ize(color.Green, "Downloaded blockchain data\n"))
 
 	if downloadOnly == false {
 		_, err := os.Stat(importToolPath)
@@ -166,7 +216,7 @@ tool or set the flag --import-tool-path to the correct location
 			}
 
 			if importVerify == true {
-				importArgs = append(importArgs, "--dangerous-unverified-import 1")
+				importArgs = append(importArgs, "--dangerous-unverified-import=1")
 			}
 
 			if dataDir != "" {
@@ -247,7 +297,4 @@ The location of the downloaded file is: %v
 		fmt.Printf(color.Ize(color.Green, s1))
 		os.Exit(0)	
 	}
-
-	fmt.Printf("Got file back from IPFS (IPFS path: %s) and wrote it to %s\n", hash, outputPathFile)
-	fmt.Println("\nAll done! You just finalized your first tutorial on how to use go-ipfs as a library")
 }

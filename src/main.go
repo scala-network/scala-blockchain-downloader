@@ -7,10 +7,16 @@ import (
   "path/filepath"
   "bufio"
   "runtime"
-  "os/exec"
 
   "github.com/urfave/cli/v2"
   cmd "github.com/scala-network/scala-blockchain-downloader/src/cmd"
+  sysctl "github.com/lorenzosaino/go-sysctl"
+)
+
+var (
+  val string
+  vals map[string]string
+  err error
 )
 
 func main() {
@@ -49,8 +55,7 @@ fmt.Println("\n")
   importToolPath := filepath.Join(workingDir, "scala-blockchain-import")
 
   if runtime.GOOS == "linux" {
-    fmt.Printf("Fixing UDP issue")
-    exec.Command("sysctl -w net.core.rmem_max=2500000").Output()
+    err = sysctl.Set("net.core.rmem_max", "2500000")
   }
 
   if runtime.GOOS == "windows" {
