@@ -76,6 +76,12 @@ fmt.Println("\n")
       },
 
       &cli.BoolFlag{
+        Name: "force",
+        Value: true,
+        Usage: "If the tool use existing chain or not (to resume)",
+      },
+
+      &cli.BoolFlag{
         Name: "without-import-verification",
         Value: true,
         Usage: "If --dangerous-unverified-import 1 should be used on import",
@@ -96,7 +102,7 @@ fmt.Println("\n")
 
     },
     Action: func(c *cli.Context) error {
-      cmd.DownloadAndImport(c.String("import-tool-path"), c.String("data-dir"), c.Bool("download-only"), c.Bool("without-import-verification"));
+      cmd.DownloadAndImport(c.String("import-tool-path"), c.String("data-dir"), c.Bool("download-only"), c.Bool("without-import-verification"), c.Bool("force"));
       return nil
     },
   }

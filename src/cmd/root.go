@@ -17,6 +17,6 @@ func fetchFileHash() string {
 	return ret;
 }
 
-func DownloadAndImport(importToolPath string, dataDir string, downloadOnly bool, importVerify bool) {
-	ipfsLib.DownloadChain(fetchFileHash(), importToolPath, dataDir, downloadOnly, importVerify)
+func DownloadAndImport(importToolPath string, dataDir string, downloadOnly bool, importVerify bool, force bool) {
+	ipfsLib.DownloadChain(fetchFileHash(), importToolPath, dataDir, downloadOnly, importVerify, force)
 }

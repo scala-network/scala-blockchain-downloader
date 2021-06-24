@@ -12,6 +12,7 @@
 *.out
 
 scala-blockchain-import*
+scala-blockchain-downloader*
 
 bin/
 

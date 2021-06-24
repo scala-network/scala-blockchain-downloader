@@ -153,7 +153,7 @@ func printDownloadedSize(totalSize int) (err error){
 	return nil
 }
 
-func DownloadChain(hash string, importToolPath string, dataDir string, downloadOnly bool, importVerify bool) {
+func DownloadChain(hash string, importToolPath string, dataDir string, downloadOnly bool, importVerify bool, force bool) {
 	
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -213,6 +213,10 @@ tool or set the flag --import-tool-path to the correct location
 			importArgs := []string{
 				"--input-file",
 				outputPathFile,
+			}
+
+			if force == true {
+				importArgs = append(importArgs, "--resume=0")
 			}
 
 			if importVerify == true {
