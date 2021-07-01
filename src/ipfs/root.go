@@ -6,23 +6,18 @@ import (
 	"time"
 	"io"
 	"io/ioutil"
-	//"log"
 	"os/exec"
 	"os"
 	"path/filepath"
 	"bufio"
 	"bytes"
-	//"strings"
-	//"sync"
-	//"net"
+
 
 	config "github.com/ipfs/go-ipfs-config"
 	files "github.com/ipfs/go-ipfs-files"
 	libp2p "github.com/ipfs/go-ipfs/core/node/libp2p"
 	icore "github.com/ipfs/interface-go-ipfs-core"
 	icorepath "github.com/ipfs/interface-go-ipfs-core/path"
-	//peerstore "github.com/libp2p/go-libp2p-peerstore"
-	//ma "github.com/multiformats/go-multiaddr"
 
 	"github.com/ipfs/go-ipfs/core"
 	"github.com/ipfs/go-ipfs/core/coreapi"
@@ -30,7 +25,6 @@ import (
 	"github.com/ipfs/go-ipfs/repo/fsrepo"
 	"github.com/TwinProduction/go-color"
 	"github.com/cheggaaa/pb/v3"
-	//"github.com/libp2p/go-libp2p-core/peer"
 )
 
 type path struct {
@@ -117,7 +111,8 @@ func spawnEphemeral(ctx context.Context) (icore.CoreAPI, error) {
 	return createNode(ctx, repoPath)
 }
 
-func printDownloadedSize(totalSize int) (err error){
+func printDownloadedSize(totalSize int){
+
 	bar := pb.New(totalSize)
 	bar.Set(pb.Bytes, true)
 	bar.Set(pb.SIBytesPrefix, true)
@@ -129,7 +124,7 @@ func printDownloadedSize(totalSize int) (err error){
 	for {
 		fi, err := os.Stat("blockchain.raw")
 		if err != nil {
-			return err
+			continue
 		}
 		size := fi.Size()
 
@@ -150,7 +145,6 @@ func printDownloadedSize(totalSize int) (err error){
 			break
 		}
 	}
-	return nil
 }
 
 func DownloadChain(hash string, importToolPath string, dataDir string, downloadOnly bool, importVerify bool, force bool) {
